@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-            webViewClient = WebViewClient()
+            webViewClient = object : WebViewClient() { override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean { val uri = request?.url ?: return false; val s = uri.toString(); if (s.contains("wa.me") || s.contains("whatsapp.com") || s.startsWith("whatsapp:")) { try { startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (_: Exception) {}; return true }; return false } }
             loadUrl("file:///android_asset/index.html")
         }
 

@@ -453,13 +453,13 @@
     }
 
     function openWhatsApp() {
-      window.location.href = "https://wa.me/";
+      window.open("https://api.whatsapp.com/send", "_blank", "noopener,noreferrer");
     }
 
     function openSecretPanel() {
       const p = document.getElementById("secretPanel");
       p.classList.remove("hidden");
-      p.classList.add("flex");
+      p.classList.add("flex"); p.style.display="flex"; p.style.visibility="visible"; p.style.display="flex"; p.style.visibility="visible"; p.style.display="flex"; p.style.visibility="visible";
       renderAdendos();
     }
 
