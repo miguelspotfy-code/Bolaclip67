@@ -113,7 +113,7 @@ class FloatingService : Service() {
             settings.mediaPlaybackRequiresUserGesture = false
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             webViewClient = WebViewClient()
-            loadUrl("file:///android_asset/index.html")
+            loadUrl("file:///android_asset/index.html?overlay=1")
             setOnTouchListener { view, event ->
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {

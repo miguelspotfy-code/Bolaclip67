@@ -63,7 +63,7 @@
       border: 1.5px solid #FDE68A;
     }
   </style>
-</head>
+<style id="bolaclip-overlay-mode">body.bolaclip-overlay-only{background:transparent!important;padding:0!important;overflow:hidden!important}body.bolaclip-overlay-only>*:not(#bubbleModal):not(.bubble-floating):not(#matrixBubble):not([id*="bubble"]):not([class*="bubble"]){display:none!important}</style></head>
 <body class="p-4 flex flex-col items-center">
   <!-- Menu lateral do Cofre -->
   <aside id="vaultDrawer" class="fixed top-0 left-0 h-full w-80 max-w-[88vw] bg-[#140F0D] gold-salmon-border p-4 z-50 -translate-x-full transition-transform duration-200 overflow-y-auto">
@@ -507,5 +507,5 @@
       notify("Chaves atualizadas para esta licença!");
     }
   </script>
-</body>
+<script id="bolaclip-overlay-script">if(window.location.search.indexOf("overlay=1")!==-1){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("bolaclip-overlay-only")});if(document.body)document.body.classList.add("bolaclip-overlay-only")}</script></body>
 </html>
