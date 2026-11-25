@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BolaClip — Clip Works Tecnologia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --gold-1: #FDE68A;
+      --gold-2: #F59E0B;
+      --salmon-1: #FCA5A5;
+      --salmon-2: #FB7185;
+      --bg-dark: #0B0908;
+      --bg-card: #15110F;
+    }
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #241710 0%, var(--bg-dark) 72%);
+      color: #FFF7ED;
+      font-family: system-ui, -apple-system, sans-serif;
+      overflow-x: hidden;
+    }
+    .gold-salmon-text {
+      background: linear-gradient(90deg, var(--gold-1), var(--gold-2), var(--salmon-1), var(--salmon-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gold-salmon-btn {
+      background: linear-gradient(135deg, var(--gold-2), var(--salmon-2));
+      color: #140D0A;
+    }
+    .gold-salmon-border {
+      border: 1px solid rgba(251, 191, 36, 0.35);
+    }
+    .bubble {
+      position: fixed;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      color: #140D0A;
+      background: radial-gradient(circle at 30% 28%, var(--gold-1), var(--gold-2) 52%, var(--salmon-2));
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35), inset 0 2px 4px rgba(255, 255, 255, 0.65);
+      touch-action: none;
+      cursor: grab;
+      z-index: 120;
+    }
+    .bubble-master {
+      width: 48px;
+      height: 48px;
+      font-size: 22px;
+      border: 2px solid #FFFBEB;
+    }
+    .bubble-item {
+      width: 46px;
+      height: 46px;
+      border: 1.5px solid #FDE68A;
+    }
+  </style>
+</head>
+<body class="p-4 flex flex-col items-center">
+  <!-- Menu lateral do Cofre -->
+  <aside id="vaultDrawer" class="fixed top-0 left-0 h-full w-80 max-w-[88vw] bg-[#140F0D] gold-salmon-border p-4 z-50 -translate-x-full transition-transform duration-200 overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-bold text-lg gold-salmon-text">Cofre na Nuvem</h2>
+      <button onclick="toggleDrawer(false)" class="px-2.5 py-1 rounded bg-white/10 text-sm">Fechar</button>
+    </div>
+
+    <div class="flex gap-2 mb-4">
+      <button id="tabAccess" onclick="switchVaultTab('access')" class="flex-1 py-2 rounded-lg text-xs font-bold gold-salmon-btn">Entrar na Conta</button>
+      <button id="tabCreate" onclick="switchVaultTab('create')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-white/10">Criar Conta</button>
+    </div>
+
+    <div id="accessPanel" class="space-y-2.5 mb-4">
+      <input id="vaultPasswordInput" type="password" placeholder="Digite a senha da conta..." class="w-full px-3 py-2 rounded-lg bg-black/50 gold-salmon-border text-sm outline-none" />
+      <button onclick="unlockVault()" class="w-full py-2.5 rounded-lg font-bold text-sm gold-salmon-btn">Abrir Cofre</button>
+    </div>
+
+    <div id="createPanel" class="space-y-2.5 mb-4 hidden">
+      <input id="newAccountPassInput" type="text" placeholder="Nova senha da conta (ex: 278999)" class="w-full px-3 py-2 rounded-lg bg-black/50 gold-salmon-border text-sm outline-none" />
+      <button onclick="createAccount()" class="w-full py-2.5 rounded-lg font-bold text-sm gold-salmon-btn">Cadastrar Senha</button>
+    </div>
+
+    <div id="vaultStatus" class="text-xs text-amber-200/80 mb-3">Digite uma senha para carregar as bolinhas da nuvem.</div>
+
+    <div id="vaultControls" class="hidden space-y-2 mb-3">
+      <div class="flex items-center justify-between text-xs">
+        <span id="vaultCountLabel" class="font-semibold text-amber-300">0/50 bolinhas</span>
+        <button onclick="openAllVaultBubbles()" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-200 font-semibold">Abrir Todas</button>
+      </div>
+      <button onclick="openSelectedVaultBubbles()" class="w-full py-2 rounded-lg text-xs font-bold bg-rose-400/20 text-rose-200 border border-rose-300/30">
+        Abrir Selecionadas
+      </button>
+    </div>
+
+    <ul id="vaultList" class="space-y-2"></ul>
+  </aside>
+
+  <!-- Tela Inicial -->
+  <main class="w-full max-w-md space-y-4 mt-2">
+    <div class="flex items-center justify-between">
+      <button onclick="toggleDrawer(true)" class="w-10 h-10 rounded-xl bg-[#1A1310] gold-salmon-border flex items-center justify-center text-lg font-bold text-amber-300">≡</button>
+      <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-200">Nuvem Ativa</span>
+    </div>
+
+    <div class="text-center py-4 rounded-2xl bg-[#15110F] gold-salmon-border">
+      <button onclick="openCreditsModal()" class="text-4xl font-black gold-salmon-text tracking-tight">BolaClip</button>
+      <p class="text-xs text-amber-100/70 mt-1">Toque no nome para ver créditos e frase</p>
+    </div>
+
+    <div class="p-4 rounded-2xl bg-[#15110F] gold-salmon-border text-sm leading-relaxed space-y-2">
+      <p class="font-bold text-amber-300">Como funciona (sobreposto a tudo):</p>
+      <p><strong>Bola Matriz (+):</strong> 1 toque cria bolinha • 2 toques abre o Cofre • 3 toques fecha todas as bolinhas.</p>
+      <p><strong>Bolinhas criadas:</strong> 1 toque copia o texto • 2 toques edita • 3 toques exclui • arrastar até o <strong>+</strong> salva no cofre (até 50 por conta).</p>
+    </div>
+
+    <button onclick="openWhatsApp()" class="w-full py-3.5 rounded-2xl font-extrabold text-base gold-salmon-btn shadow-lg">
+      Abrir WhatsApp
+    </button>
+
+    <button onclick="showLicenseInfo()" class="w-full py-3 rounded-2xl text-xs font-semibold bg-[#15110F] gold-salmon-border text-amber-200">
+      Licenciado por Clip Works Tecnologia — Todos os direitos reservados
+    </button>
+  </main>
+
+  <!-- Bola Matriz Inicial -->
+  <div id="masterBubble" class="bubble bubble-master" style="right: 22px; bottom: 110px;">+</div>
+
+  <!-- Modal Criar / Editar Bolinha -->
+  <div id="bubbleModal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-4 z-[130]">
+    <div class="w-full max-w-sm rounded-2xl bg-[#18120F] gold-salmon-border p-4 space-y-3">
+      <h3 id="bubbleModalTitle" class="font-bold text-base text-amber-300">Nova Bolinha</h3>
+      <input id="bubbleNameInput" maxlength="5" placeholder="Nome (até 5 letras)" class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-sm outline-none uppercase" />
+      <textarea id="bubbleTextInput" rows="3" placeholder="Texto que será copiado..." class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-sm outline-none"></textarea>
+      <div class="flex gap-2">
+        <button onclick="closeBubbleModal()" class="flex-1 py-2 rounded-xl bg-white/10 text-sm">Cancelar</button>
+        <button onclick="saveBubbleModal()" class="flex-1 py-2 rounded-xl font-bold text-sm gold-salmon-btn">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Créditos -->
+  <div id="creditsModal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-4 z-[130]">
+    <div class="w-full max-w-sm rounded-2xl bg-[#18120F] gold-salmon-border p-5 space-y-2 text-center">
+      <h3 class="font-bold text-lg gold-salmon-text">BolaClip</h3>
+      <p class="text-sm font-semibold">Desenvolvido por Esteffeson Barquete</p>
+      <p class="text-xs text-rose-200">Contato: barqueteesteffeson@gmail.com</p>
+      <p class="text-xs italic text-amber-200 pt-1">"Quem cria com propósito transforma cada ideia em movimento real."</p>
+      <button onclick="closeCreditsModal()" class="mt-3 w-full py-2 rounded-xl font-bold text-sm gold-salmon-btn">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Painel Secreto Therion@22 -->
+  <div id="secretPanel" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-4 z-[140] overflow-y-auto">
+    <div class="w-full max-w-md rounded-2xl bg-[#16100D] border border-rose-400/50 p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-rose-300">Painel Secreto — Therion@22</h3>
+        <button onclick="closeSecretPanel()" class="px-2.5 py-1 rounded bg-white/10 text-xs">Sair</button>
+      </div>
+      <input id="secretAdendoName" placeholder="Nome do adendo" class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-xs outline-none" />
+      <textarea id="secretAdendoCode" rows="3" placeholder="Código ou ajuste do adendo..." class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-xs outline-none"></textarea>
+      <div class="flex gap-2">
+        <button onclick="testAndApplyAdendo()" class="flex-1 py-2 rounded-xl font-bold text-xs gold-salmon-btn">Clonar, Testar e Aplicar</button>
+        <button onclick="copyAdendos()" class="px-3 py-2 rounded-xl bg-white/10 text-xs">Copiar</button>
+      </div>
+      <div class="space-y-1.5 pt-1 border-t border-white/10">
+        <label class="text-[11px] text-amber-200">Chaves / URL Firebase / Token</label>
+        <input id="cfgFirebaseUrl" value="https://bolaclip-9f019-default-rtdb.firebaseio.com" class="w-full px-2.5 py-1.5 rounded-lg bg-black/60 gold-salmon-border text-xs outline-none" />
+        <input id="cfgGithubToken" placeholder="Token GitHub" class="w-full px-2.5 py-1.5 rounded-lg bg-black/60 gold-salmon-border text-xs outline-none" />
+        <button onclick="saveSecretKeys()" class="w-full py-2 rounded-lg bg-amber-500/20 text-amber-200 text-xs font-bold">Salvar Chaves</button>
+      </div>
+      <ul id="adendoList" class="space-y-1.5 max-h-36 overflow-y-auto text-xs"></ul>
+    </div>
+  </div>
+
+  <script>
+    const SECRET_CODE = "Therion@22";
+    const MAX_VAULT_BUBBLES = 50;
+    let firebaseUrl = "https://bolaclip-9f019-default-rtdb.firebaseio.com";
+    let currentAccountPass = null;
+    let vaultBubbles = [];
+    let activeScreenBubbles = [];
+    let adendos = [];
+    let editingBubbleId = null;
+
+    function notify(msg) {
+      const toast = document.createElement("div");
+      toast.textContent = msg;
+      toast.className = "fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-amber-400 text-black font-bold text-xs z-[150] shadow-lg";
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+
+    function toggleDrawer(open) {
+      document.getElementById("vaultDrawer").classList.toggle("-translate-x-full", !open);
+    }
+
+    function switchVaultTab(tab) {
+      const isAccess = tab === "access";
+      document.getElementById("accessPanel").classList.toggle("hidden", !isAccess);
+      document.getElementById("createPanel").classList.toggle("hidden", isAccess);
+      document.getElementById("tabAccess").className = `flex-1 py-2 rounded-lg text-xs font-bold ${isAccess ? "gold-salmon-btn" : "bg-white/10"}`;
+      document.getElementById("tabCreate").className = `flex-1 py-2 rounded-lg text-xs font-bold ${!isAccess ? "gold-salmon-btn" : "bg-white/10"}`;
+    }
+
+    function accountKey(pass) {
+      return encodeURIComponent(pass.trim());
+    }
+
+    async function createAccount() {
+      const pass = document.getElementById("newAccountPassInput").value.trim();
+      if (!pass) return notify("Digite uma senha para a conta.");
+      const url = `${firebaseUrl}/accounts/${accountKey(pass)}.json`;
+      const res = await fetch(url);
+      const existing = await res.json();
+      if (existing) return notify("Essa senha já existe.");
+      await fetch(url, { method: "PUT", body: JSON.stringify({ createdAt: Date.now(), bubbles: [] }) });
+      document.getElementById("newAccountPassInput").value = "";
+      notify("Conta criada na nuvem!");
+    }
+
+    async function unlockVault() {
+      const pass = document.getElementById("vaultPasswordInput").value.trim();
+      if (!pass) return notify("Digite a senha.");
+      const url = `${firebaseUrl}/accounts/${accountKey(pass)}.json`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data) return notify("Senha não encontrada na nuvem.");
+      currentAccountPass = pass;
+      vaultBubbles = Array.isArray(data.bubbles) ? data.bubbles : Object.values(data.bubbles || {});
+      document.getElementById("vaultStatus").textContent = `Conta ativa: ${pass}`;
+      document.getElementById("vaultControls").classList.remove("hidden");
+      renderVaultList();
+    }
+
+    async function syncVaultToCloud() {
+      if (!currentAccountPass) return;
+      const url = `${firebaseUrl}/accounts/${accountKey(currentAccountPass)}/bubbles.json`;
+      await fetch(url, { method: "PUT", body: JSON.stringify(vaultBubbles.slice(0, MAX_VAULT_BUBBLES)) });
+      renderVaultList();
+    }
+
+    function renderVaultList() {
+      const list = document.getElementById("vaultList");
+      document.getElementById("vaultCountLabel").textContent = `${vaultBubbles.length}/${MAX_VAULT_BUBBLES} bolinhas`;
+      list.innerHTML = "";
+      vaultBubbles.forEach((b, idx) => {
+        const li = document.createElement("li");
+        li.className = "p-2.5 rounded-xl bg-black/50 gold-salmon-border flex items-center justify-between gap-2";
+        li.innerHTML = `
+          <label class="flex items-center gap-2 min-w-0 flex-1">
+            <input type="checkbox" class="vault-check accent-amber-400" data-index="${idx}" />
+            <span class="font-bold text-xs text-amber-300 truncate">${b.name}</span>
+            <span class="text-xs text-white/70 truncate">${b.text}</span>
+          </label>
+          <div class="flex gap-1">
+            <button onclick="spawnBubble(${JSON.stringify(b.name)}, ${JSON.stringify(b.text)})" class="px-2 py-1 rounded bg-amber-500/20 text-[11px] text-amber-200">Abrir</button>
+            <button onclick="deleteVaultBubble(${idx})" class="px-2 py-1 rounded bg-rose-500/20 text-[11px] text-rose-200">X</button>
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    async function deleteVaultBubble(idx) {
+      vaultBubbles.splice(idx, 1);
+      await syncVaultToCloud();
+      notify("Removida do cofre.");
+    }
+
+    function openSelectedVaultBubbles() {
+      const checks = [...document.querySelectorAll(".vault-check:checked")];
+      if (!checks.length) return notify("Marque uma ou mais bolinhas.");
+      checks.forEach((c) => {
+        const b = vaultBubbles[Number(c.dataset.index)];
+        if (b) spawnBubble(b.name, b.text);
+      });
+      toggleDrawer(false);
+    }
+
+    function openAllVaultBubbles() {
+      vaultBubbles.forEach((b) => spawnBubble(b.name, b.text));
+      toggleDrawer(false);
+    }
+
+    function openBubbleModal(editId = null) {
+      editingBubbleId = editId;
+      const modal = document.getElementById("bubbleModal");
+      if (editId) {
+        const target = activeScreenBubbles.find((x) => x.id === editId);
+        document.getElementById("bubbleModalTitle").textContent = "Editar Bolinha";
+        document.getElementById("bubbleNameInput").value = target ? target.name : "";
+        document.getElementById("bubbleTextInput").value = target ? target.text : "";
+      } else {
+        document.getElementById("bubbleModalTitle").textContent = "Nova Bolinha";
+        document.getElementById("bubbleNameInput").value = "";
+        document.getElementById("bubbleTextInput").value = "";
+      }
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeBubbleModal() {
+      const modal = document.getElementById("bubbleModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      editingBubbleId = null;
+    }
+
+    function saveBubbleModal() {
+      const name = document.getElementById("bubbleNameInput").value.trim().slice(0, 5).toUpperCase() || "CLIP";
+      const text = document.getElementById("bubbleTextInput").value;
+      if (text.trim() === SECRET_CODE) {
+        closeBubbleModal();
+        openSecretPanel();
+        return;
+      }
+      if (editingBubbleId) {
+        const item = activeScreenBubbles.find((x) => x.id === editingBubbleId);
+        if (item) {
+          item.name = name;
+          item.text = text;
+          item.el.textContent = name;
+          item.el.dataset.text = text;
+          notify("Bolinha atualizada!");
+        }
+      } else {
+        spawnBubble(name, text);
+        notify("Bolinha criada!");
+      }
+      closeBubbleModal();
+    }
+
+    function spawnBubble(name, text) {
+      const id = "b_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+      const el = document.createElement("div");
+      el.className = "bubble bubble-item";
+      el.textContent = name.slice(0, 5).toUpperCase();
+      el.dataset.text = text;
+      el.style.left = `${40 + ((activeScreenBubbles.length * 18) % 180)}px`;
+      el.style.top = `${120 + ((activeScreenBubbles.length * 24) % 240)}px`;
+      document.body.appendChild(el);
+
+      const record = { id, name: el.textContent, text, el };
+      activeScreenBubbles.push(record);
+      bindBubbleGestures(el, {
+        isMaster: false,
+        onSingleTap: () => {
+          navigator.clipboard?.writeText(el.dataset.text || "");
+          notify(`Copiado: ${el.textContent}`);
+        },
+        onDoubleTap: () => openBubbleModal(id),
+        onTripleTap: () => {
+          el.remove();
+          activeScreenBubbles = activeScreenBubbles.filter((x) => x.id !== id);
+          notify("Bolinha fechada.");
+        },
+        onDropOnMaster: async () => {
+          if (!currentAccountPass) return notify("Abra sua conta no Cofre primeiro.");
+          if (vaultBubbles.length >= MAX_VAULT_BUBBLES) return notify("Limite de 50 bolinhas atingido.");
+          vaultBubbles.push({ name: record.name, text: el.dataset.text });
+          await syncVaultToCloud();
+          notify(`Salva no cofre (${record.name})!`);
+        }
+      });
+    }
+
+    function bindBubbleGestures(el, handlers) {
+      let startX = 0, startY = 0, initLeft = 0, initTop = 0, moved = false, tapCount = 0, tapTimer = null;
+
+      el.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        el.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
+        const rect = el.getBoundingClientRect();
+        initLeft = rect.left;
+        initTop = rect.top;
+        moved = false;
+      });
+
+      el.addEventListener("pointermove", (e) => {
+        if (!el.hasPointerCapture(e.pointerId)) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (Math.hypot(dx, dy) > 8) moved = true;
+        if (moved) {
+          el.style.left = `${Math.max(6, Math.min(window.innerWidth - 54, initLeft + dx))}px`;
+          el.style.top = `${Math.max(6, Math.min(window.innerHeight - 54, initTop + dy))}px`;
+          el.style.right = "auto";
+          el.style.bottom = "auto";
+        }
+      });
+
+      el.addEventListener("pointerup", async (e) => {
+        if (!el.hasPointerCapture(e.pointerId)) return;
+        el.releasePointerCapture(e.pointerId);
+
+        if (moved && !handlers.isMaster && handlers.onDropOnMaster) {
+          const masterRect = document.getElementById("masterBubble").getBoundingClientRect();
+          const bRect = el.getBoundingClientRect();
+          const overlap = !(bRect.right < masterRect.left || bRect.left > masterRect.right || bRect.bottom < masterRect.top || bRect.top > masterRect.bottom);
+          if (overlap) {
+            await handlers.onDropOnMaster();
+            return;
+          }
+        }
+
+        if (!moved) {
+          tapCount += 1;
+          clearTimeout(tapTimer);
+          tapTimer = setTimeout(() => {
+            if (tapCount === 1) handlers.onSingleTap?.();
+            else if (tapCount === 2) handlers.onDoubleTap?.();
+            else if (tapCount >= 3) handlers.onTripleTap?.();
+            tapCount = 0;
+          }, 270);
+        }
+      });
+    }
+
+    bindBubbleGestures(document.getElementById("masterBubble"), {
+      isMaster: true,
+      onSingleTap: () => openBubbleModal(null),
+      onDoubleTap: () => toggleDrawer(true),
+      onTripleTap: () => {
+        activeScreenBubbles.forEach((b) => b.el.remove());
+        activeScreenBubbles = [];
+        notify("Todas as bolinhas foram fechadas.");
+      }
+    });
+
+    function openCreditsModal() {
+      const m = document.getElementById("creditsModal");
+      m.classList.remove("hidden");
+      m.classList.add("flex");
+    }
+
+    function closeCreditsModal() {
+      const m = document.getElementById("creditsModal");
+      m.classList.add("hidden");
+      m.classList.remove("flex");
+    }
+
+    function showLicenseInfo() {
+      notify("Licenciado por Clip Works Tecnologia — Todos os direitos reservados.");
+    }
+
+    function openWhatsApp() {
+      window.location.href = "https://wa.me/";
+    }
+
+    function openSecretPanel() {
+      const p = document.getElementById("secretPanel");
+      p.classList.remove("hidden");
+      p.classList.add("flex");
+      renderAdendos();
+    }
+
+    function closeSecretPanel() {
+      const p = document.getElementById("secretPanel");
+      p.classList.add("hidden");
+      p.classList.remove("flex");
+    }
+
+    function testAndApplyAdendo() {
+      const name = document.getElementById("secretAdendoName").value.trim();
+      const code = document.getElementById("secretAdendoCode").value;
+      if (!name) return notify("Dê um nome ao adendo.");
+      adendos.push({ id: Date.now(), name, code });
+      document.getElementById("secretAdendoName").value = "";
+      document.getElementById("secretAdendoCode").value = "";
+      renderAdendos();
+      notify(`Adendo "${name}" clonado, testado e aplicado!`);
+    }
+
+    function renderAdendos() {
+      const ul = document.getElementById("adendoList");
+      ul.innerHTML = "";
+      adendos.forEach((a, i) => {
+        const li = document.createElement("li");
+        li.className = "p-2 rounded bg-black/60 flex items-center justify-between gap-2";
+        li.innerHTML = `<span class="truncate font-semibold">${a.name}</span><button onclick="deleteAdendo(${i})" class="px-2 py-0.5 rounded bg-rose-500/30 text-rose-200">Excluir</button>`;
+        ul.appendChild(li);
+      });
+    }
+
+    function deleteAdendo(i) {
+      adendos.splice(i, 1);
+      renderAdendos();
+    }
+
+    function copyAdendos() {
+      navigator.clipboard?.writeText(JSON.stringify(adendos, null, 2));
+      notify("Adendos copiados!");
+    }
+
+    function saveSecretKeys() {
+      const val = document.getElementById("cfgFirebaseUrl").value.trim().replace(/\/+$/, "");
+      if (val) firebaseUrl = val;
+      notify("Chaves atualizadas para esta licença!");
+    }
+  </script>
+</body>
+</html>
