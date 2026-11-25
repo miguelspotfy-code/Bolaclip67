@@ -22,23 +22,24 @@ import androidx.core.app.NotificationCompat
 class FloatingService : Service() {
 
     private var windowManager: WindowManager? = null
-    private var overlayView: View? = null
+    private var overlayView: WebView? = null
     private var layoutParams: WindowManager.LayoutParams? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
-        startForegroundNotification()
+        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        startForegroundServiceNotification()
         setupOverlayView()
     }
 
-    private fun startForegroundNotification() {
+    private fun startForegroundServiceNotification() {
         val channelId = "bolaclip_overlay_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "BolaClip Flutuante",
+                "BolaClip Overlay",
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -46,9 +47,9 @@ class FloatingService : Service() {
         }
 
         val notification: Notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("BolaClip ativo")
-            .setContentText("Sobreposição sobre outros aplicativos em execução.")
-            .setSmallIcon(android.R.drawable.ic_menu_add)
+            .setContentTitle("BolaClip Ativo")
+            .setContentText("Bolhas flutuantes disponíveis na tela")
+            .setSmallIcon(R.drawable.ic_launcher_vector)
             .setOngoing(true)
             .build()
 
@@ -58,33 +59,31 @@ class FloatingService : Service() {
     private fun setWindowFocusable(focusable: Boolean, targetView: View?) {
         val wm = windowManager ?: return
         val params = layoutParams ?: return
-        val currentFlags = params.flags
+        val current = params.flags
         params.flags = if (focusable) {
-            currentFlags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
+            current and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
         } else {
-            currentFlags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            current or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
         }
         try {
-            wm.updateViewLayout(overlayView, params)
+            overlayView?.let { wm.updateViewLayout(it, params) }
         } catch (_: Exception) {
         }
+
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         if (focusable && targetView != null) {
             targetView.postDelayed({
                 targetView.requestFocus()
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.showSoftInput(targetView, InputMethodManager.SHOW_IMPLICIT)
-            }, 60
+            }, 60)
         } else {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             overlayView?.windowToken?.let { imm?.hideSoftInputFromWindow(it, 0) }
-            }
         }
     }
 
     private fun setupOverlayView() {
         if (overlayView != null) return
 
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val layoutFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
