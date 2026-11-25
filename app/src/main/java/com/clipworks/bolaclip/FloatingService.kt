@@ -13,6 +13,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -22,6 +23,7 @@ class FloatingService : Service() {
 
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
+    private var layoutParams: WindowManager.LayoutParams? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -36,7 +38,7 @@ class FloatingService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "BolaClip Sobreposição",
+                "BolaClip Flutuante",
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -53,6 +55,28 @@ class FloatingService : Service() {
         startForeground(1001, notification)
     }
 
+    private fun setWindowFocusable(focusable: Boolean, targetView: View?) {
+        val wm = windowManager ?: return
+        val params = layoutParams ?: return
+        val currentFlags = params.flags
+        params.flags = if (focusable) {
+            currentFlags and WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE.inv()
+        } else {
+            currentFlags or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+        }
+        try {
+            wm.updateViewLayout(overlayView, params)
+        } catch (_: Exception) {
+        }
+        if (focusable && targetView != null) {
+            targetView.post {
+                targetView.requestFocus()
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.showSoftInput(targetView, InputMethodManager.SHOW_IMPLICIT)
+            }
+        }
+    }
+
     private fun setupOverlayView() {
         if (overlayView != null) return
 
@@ -65,26 +89,41 @@ class FloatingService : Service() {
         }
 
         val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             layoutFlag,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE or
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
         }
+
+        layoutParams = params
 
         val webView = WebView(this).apply {
             setBackgroundColor(0x00000000)
+            isFocusable = true
+            isFocusableInTouchMode = true
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
             settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             webViewClient = WebViewClient()
             loadUrl("file:///android_asset/index.html")
-            setOnTouchListener { _, event ->
-                event.action == MotionEvent.ACTION_OUTSIDE
+            setOnTouchListener { view, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        setWindowFocusable(true, view)
+                    }
+                    MotionEvent.ACTION_OUTSIDE -> {
+                        setWindowFocusable(false, null)
+                    }
+                }
+                false
             }
         }
 
@@ -98,5 +137,6 @@ class FloatingService : Service() {
             windowManager?.removeView(it)
             overlayView = null
         }
+        layoutParams = null
     }
 }
