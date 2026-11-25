@@ -69,10 +69,14 @@ class FloatingService : Service() {
         } catch (_: Exception) {
         }
         if (focusable && targetView != null) {
-            targetView.post {
+            targetView.postDelayed({
                 targetView.requestFocus()
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 imm?.showSoftInput(targetView, InputMethodManager.SHOW_IMPLICIT)
+            }, 60
+        } else {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            overlayView?.windowToken?.let { imm?.hideSoftInputFromWindow(it, 0) }
             }
         }
     }

@@ -198,7 +198,7 @@
     }
 
     function toggleDrawer(open) {
-      document.getElementById("vaultDrawer").classList.toggle("-translate-x-full", !open);
+      const d = document.getElementById("vaultDrawer"); d.classList.toggle("-translate-x-full", !open); d.style.transform = open ? "translateX(0)" : ""; d.style.visibility = open ? "visible" : "";
     }
 
     function switchVaultTab(tab) {
@@ -303,12 +303,12 @@
         document.getElementById("bubbleTextInput").value = "";
       }
       modal.classList.remove("hidden");
-      modal.classList.add("flex");
+      modal.classList.add("flex"); modal.style.display="flex"; modal.style.visibility="visible";
     }
 
     function closeBubbleModal() {
       const modal = document.getElementById("bubbleModal");
-      modal.classList.add("hidden");
+      modal.classList.add("hidden"); modal.style.display="none"; modal.style.visibility="hidden";
       modal.classList.remove("flex");
       editingBubbleId = null;
     }
@@ -389,7 +389,7 @@
         if (!el.hasPointerCapture(e.pointerId)) return;
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
-        if (Math.hypot(dx, dy) > 8) moved = true;
+        if (Math.hypot(dx, dy) > 14) moved = true;
         if (moved) {
           el.style.left = `${Math.max(6, Math.min(window.innerWidth - 54, initLeft + dx))}px`;
           el.style.top = `${Math.max(6, Math.min(window.innerHeight - 54, initTop + dy))}px`;
