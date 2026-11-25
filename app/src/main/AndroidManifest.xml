@@ -10,6 +10,8 @@
         android:allowBackup="true"
         android:label="BolaClip"
         android:supportsRtl="true"
+        android:icon="@drawable/ic_launcher_vector"
+        android:roundIcon="@drawable/ic_launcher_vector"
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
         <activity
