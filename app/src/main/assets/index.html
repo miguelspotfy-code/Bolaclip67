@@ -15,6 +15,7 @@
       --bg-card: #15110F;
     }
     * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+    input, textarea { user-select: text; -webkit-user-select: text; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -63,28 +64,59 @@
       border: 1.5px solid #FDE68A;
     }
   </style>
-<style id="bolaclip-overlay-mode">body.bolaclip-overlay-only{background:transparent!important;padding:0!important;margin:0!important;overflow:hidden!important}body.bolaclip-overlay-only *{visibility:hidden!important}body.bolaclip-overlay-only .bubble,body.bolaclip-overlay-only .bubble *,body.bolaclip-overlay-only .bubble-item,body.bolaclip-overlay-only .bubble-item *,body.bolaclip-overlay-only [id*="matrix"],body.bolaclip-overlay-only [id*="matrix"] *,body.bolaclip-overlay-only [class*="fab"],body.bolaclip-overlay-only [class*="fab"] *{visibility:visible!important}body.bolaclip-overlay-only #bubbleModal:not(.hidden),body.bolaclip-overlay-only #bubbleModal:not(.hidden) *{visibility:visible!important}body.bolaclip-overlay-only #bubbleModal:not(.hidden){display:flex!important}</style></head>
+  <style id="bolaclip-overlay-mode">
+    body.bolaclip-overlay-only {
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+    }
+    body.bolaclip-overlay-only * {
+      visibility: hidden !important;
+    }
+    body.bolaclip-overlay-only .bubble,
+    body.bolaclip-overlay-only .bubble *,
+    body.bolaclip-overlay-only .bubble-item,
+    body.bolaclip-overlay-only .bubble-item *,
+    body.bolaclip-overlay-only [id*="matrix"],
+    body.bolaclip-overlay-only [id*="matrix"] *,
+    body.bolaclip-overlay-only [class*="fab"],
+    body.bolaclip-overlay-only [class*="fab"] * {
+      visibility: visible !important;
+    }
+    body.bolaclip-overlay-only #bubbleModal:not(.hidden),
+    body.bolaclip-overlay-only #bubbleModal:not(.hidden) *,
+    body.bolaclip-overlay-only #secretPanel:not(.hidden),
+    body.bolaclip-overlay-only #secretPanel:not(.hidden) * {
+      visibility: visible !important;
+    }
+    body.bolaclip-overlay-only #bubbleModal:not(.hidden),
+    body.bolaclip-overlay-only #secretPanel:not(.hidden) {
+      display: flex !important;
+    }
+  </style>
+</head>
 <body class="p-4 flex flex-col items-center">
   <!-- Menu lateral do Cofre -->
   <aside id="vaultDrawer" class="fixed top-0 left-0 h-full w-80 max-w-[88vw] bg-[#140F0D] gold-salmon-border p-4 z-50 -translate-x-full transition-transform duration-200 overflow-y-auto">
     <div class="flex items-center justify-between mb-4">
       <h2 class="font-bold text-lg gold-salmon-text">Cofre na Nuvem</h2>
-      <button onclick="toggleDrawer(false)" class="px-2.5 py-1 rounded bg-white/10 text-sm">Fechar</button>
+      <button type="button" onclick="toggleDrawer(false)" class="px-2.5 py-1 rounded bg-white/10 text-sm">Fechar</button>
     </div>
 
     <div class="flex gap-2 mb-4">
-      <button id="tabAccess" onclick="switchVaultTab('access')" class="flex-1 py-2 rounded-lg text-xs font-bold gold-salmon-btn">Entrar na Conta</button>
-      <button id="tabCreate" onclick="switchVaultTab('create')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-white/10">Criar Conta</button>
+      <button type="button" id="tabAccess" onclick="switchVaultTab('access')" class="flex-1 py-2 rounded-lg text-xs font-bold gold-salmon-btn">Entrar na Conta</button>
+      <button type="button" id="tabCreate" onclick="switchVaultTab('create')" class="flex-1 py-2 rounded-lg text-xs font-bold bg-white/10">Criar Conta</button>
     </div>
 
     <div id="accessPanel" class="space-y-2.5 mb-4">
       <input id="vaultPasswordInput" type="password" placeholder="Digite a senha da conta..." class="w-full px-3 py-2 rounded-lg bg-black/50 gold-salmon-border text-sm outline-none" />
-      <button onclick="unlockVault()" class="w-full py-2.5 rounded-lg font-bold text-sm gold-salmon-btn">Abrir Cofre</button>
+      <button type="button" onclick="unlockVault()" class="w-full py-2.5 rounded-lg font-bold text-sm gold-salmon-btn">Abrir Cofre</button>
     </div>
 
     <div id="createPanel" class="space-y-2.5 mb-4 hidden">
       <input id="newAccountPassInput" type="text" placeholder="Nova senha da conta (ex: 278999)" class="w-full px-3 py-2 rounded-lg bg-black/50 gold-salmon-border text-sm outline-none" />
-      <button onclick="createAccount()" class="w-full py-2.5 rounded-lg font-bold text-sm gold-salmon-btn">Cadastrar Senha</button>
+      <button type="button" onclick="createAccount()" class="w-full py-2.5 rounded-lg font-bold text-sm gold-salmon-btn">Cadastrar Senha</button>
     </div>
 
     <div id="vaultStatus" class="text-xs text-amber-200/80 mb-3">Digite uma senha para carregar as bolinhas da nuvem.</div>
@@ -92,9 +124,9 @@
     <div id="vaultControls" class="hidden space-y-2 mb-3">
       <div class="flex items-center justify-between text-xs">
         <span id="vaultCountLabel" class="font-semibold text-amber-300">0/50 bolinhas</span>
-        <button onclick="openAllVaultBubbles()" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-200 font-semibold">Abrir Todas</button>
+        <button type="button" onclick="openAllVaultBubbles()" class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-200 font-semibold">Abrir Todas</button>
       </div>
-      <button onclick="openSelectedVaultBubbles()" class="w-full py-2 rounded-lg text-xs font-bold bg-rose-400/20 text-rose-200 border border-rose-300/30">
+      <button type="button" onclick="openSelectedVaultBubbles()" class="w-full py-2 rounded-lg text-xs font-bold bg-rose-400/20 text-rose-200 border border-rose-300/30">
         Abrir Selecionadas
       </button>
     </div>
@@ -105,12 +137,12 @@
   <!-- Tela Inicial -->
   <main class="w-full max-w-md space-y-4 mt-2">
     <div class="flex items-center justify-between">
-      <button onclick="toggleDrawer(true)" class="w-10 h-10 rounded-xl bg-[#1A1310] gold-salmon-border flex items-center justify-center text-lg font-bold text-amber-300">≡</button>
+      <button type="button" onclick="toggleDrawer(true)" class="w-10 h-10 rounded-xl bg-[#1A1310] gold-salmon-border flex items-center justify-center text-lg font-bold text-amber-300">≡</button>
       <span class="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-200">Nuvem Ativa</span>
     </div>
 
     <div class="text-center py-4 rounded-2xl bg-[#15110F] gold-salmon-border">
-      <button onclick="openCreditsModal()" class="text-4xl font-black gold-salmon-text tracking-tight">BolaClip</button>
+      <button type="button" onclick="openCreditsModal()" class="text-4xl font-black gold-salmon-text tracking-tight">BolaClip</button>
       <p class="text-xs text-amber-100/70 mt-1">Toque no nome para ver créditos e frase</p>
     </div>
 
@@ -120,11 +152,11 @@
       <p><strong>Bolinhas criadas:</strong> 1 toque copia o texto • 2 toques edita • 3 toques exclui • arrastar até o <strong>+</strong> salva no cofre (até 50 por conta).</p>
     </div>
 
-    <button onclick="openWhatsApp()" class="w-full py-3.5 rounded-2xl font-extrabold text-base gold-salmon-btn shadow-lg">
+    <button type="button" onclick="openWhatsApp()" class="w-full py-3.5 rounded-2xl font-extrabold text-base gold-salmon-btn shadow-lg">
       Abrir WhatsApp
     </button>
 
-    <button onclick="showLicenseInfo()" class="w-full py-3 rounded-2xl text-xs font-semibold bg-[#15110F] gold-salmon-border text-amber-200">
+    <button type="button" onclick="showLicenseInfo()" class="w-full py-3 rounded-2xl text-xs font-semibold bg-[#15110F] gold-salmon-border text-amber-200">
       Licenciado por Clip Works Tecnologia — Todos os direitos reservados
     </button>
   </main>
@@ -133,47 +165,47 @@
   <div id="masterBubble" class="bubble bubble-master" style="right: 22px; bottom: 110px;">+</div>
 
   <!-- Modal Criar / Editar Bolinha -->
-  <div id="bubbleModal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-4 z-[130]">
+  <div id="bubbleModal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-4 z-[130]" style="display: none;">
     <div class="w-full max-w-sm rounded-2xl bg-[#18120F] gold-salmon-border p-4 space-y-3">
       <h3 id="bubbleModalTitle" class="font-bold text-base text-amber-300">Nova Bolinha</h3>
       <input id="bubbleNameInput" maxlength="5" placeholder="Nome (até 5 letras)" class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-sm outline-none uppercase" />
       <textarea id="bubbleTextInput" rows="3" placeholder="Texto que será copiado..." class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-sm outline-none"></textarea>
       <div class="flex gap-2">
-        <button onclick="closeBubbleModal()" class="flex-1 py-2 rounded-xl bg-white/10 text-sm">Cancelar</button>
-        <button onclick="saveBubbleModal()" class="flex-1 py-2 rounded-xl font-bold text-sm gold-salmon-btn">Salvar</button>
+        <button type="button" onclick="closeBubbleModal()" class="flex-1 py-2 rounded-xl bg-white/10 text-sm">Cancelar</button>
+        <button type="button" onclick="saveBubbleModal()" class="flex-1 py-2 rounded-xl font-bold text-sm gold-salmon-btn">Salvar</button>
       </div>
     </div>
   </div>
 
   <!-- Modal Créditos -->
-  <div id="creditsModal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-4 z-[130]">
+  <div id="creditsModal" class="fixed inset-0 bg-black/75 hidden items-center justify-center p-4 z-[130]" style="display: none;">
     <div class="w-full max-w-sm rounded-2xl bg-[#18120F] gold-salmon-border p-5 space-y-2 text-center">
       <h3 class="font-bold text-lg gold-salmon-text">BolaClip</h3>
       <p class="text-sm font-semibold">Desenvolvido por Esteffeson Barquete</p>
       <p class="text-xs text-rose-200">Contato: barqueteesteffeson@gmail.com</p>
       <p class="text-xs italic text-amber-200 pt-1">"Quem cria com propósito transforma cada ideia em movimento real."</p>
-      <button onclick="closeCreditsModal()" class="mt-3 w-full py-2 rounded-xl font-bold text-sm gold-salmon-btn">Fechar</button>
+      <button type="button" onclick="closeCreditsModal()" class="mt-3 w-full py-2 rounded-xl font-bold text-sm gold-salmon-btn">Fechar</button>
     </div>
   </div>
 
   <!-- Painel Secreto Therion@22 -->
-  <div id="secretPanel" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-4 z-[140] overflow-y-auto">
+  <div id="secretPanel" class="fixed inset-0 bg-black/85 hidden items-center justify-center p-4 z-[140] overflow-y-auto" style="display: none;">
     <div class="w-full max-w-md rounded-2xl bg-[#16100D] border border-rose-400/50 p-4 space-y-3">
       <div class="flex items-center justify-between">
         <h3 class="font-bold text-base text-rose-300">Painel Secreto — Therion@22</h3>
-        <button onclick="closeSecretPanel()" class="px-2.5 py-1 rounded bg-white/10 text-xs">Sair</button>
+        <button type="button" onclick="closeSecretPanel()" class="px-2.5 py-1 rounded bg-white/10 text-xs">Sair</button>
       </div>
       <input id="secretAdendoName" placeholder="Nome do adendo" class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-xs outline-none" />
       <textarea id="secretAdendoCode" rows="3" placeholder="Código ou ajuste do adendo..." class="w-full px-3 py-2 rounded-xl bg-black/60 gold-salmon-border text-xs outline-none"></textarea>
       <div class="flex gap-2">
-        <button onclick="testAndApplyAdendo()" class="flex-1 py-2 rounded-xl font-bold text-xs gold-salmon-btn">Clonar, Testar e Aplicar</button>
-        <button onclick="copyAdendos()" class="px-3 py-2 rounded-xl bg-white/10 text-xs">Copiar</button>
+        <button type="button" onclick="testAndApplyAdendo()" class="flex-1 py-2 rounded-xl font-bold text-xs gold-salmon-btn">Clonar, Testar e Aplicar</button>
+        <button type="button" onclick="copyAdendos()" class="px-3 py-2 rounded-xl bg-white/10 text-xs">Copiar</button>
       </div>
       <div class="space-y-1.5 pt-1 border-t border-white/10">
         <label class="text-[11px] text-amber-200">Chaves / URL Firebase / Token</label>
         <input id="cfgFirebaseUrl" value="https://bolaclip-9f019-default-rtdb.firebaseio.com" class="w-full px-2.5 py-1.5 rounded-lg bg-black/60 gold-salmon-border text-xs outline-none" />
         <input id="cfgGithubToken" placeholder="Token GitHub" class="w-full px-2.5 py-1.5 rounded-lg bg-black/60 gold-salmon-border text-xs outline-none" />
-        <button onclick="saveSecretKeys()" class="w-full py-2 rounded-lg bg-amber-500/20 text-amber-200 text-xs font-bold">Salvar Chaves</button>
+        <button type="button" onclick="saveSecretKeys()" class="w-full py-2 rounded-lg bg-amber-500/20 text-amber-200 text-xs font-bold">Salvar Chaves</button>
       </div>
       <ul id="adendoList" class="space-y-1.5 max-h-36 overflow-y-auto text-xs"></ul>
     </div>
@@ -198,7 +230,10 @@
     }
 
     function toggleDrawer(open) {
-      const d = document.getElementById("vaultDrawer"); d.classList.toggle("-translate-x-full", !open); d.style.transform = open ? "translateX(0)" : ""; d.style.visibility = open ? "visible" : "";
+      const d = document.getElementById("vaultDrawer");
+      d.classList.toggle("-translate-x-full", !open);
+      d.style.transform = open ? "translateX(0)" : "";
+      d.style.visibility = open ? "visible" : "";
     }
 
     function switchVaultTab(tab) {
@@ -260,8 +295,8 @@
             <span class="text-xs text-white/70 truncate">${b.text}</span>
           </label>
           <div class="flex gap-1">
-            <button onclick="spawnBubble(${JSON.stringify(b.name)}, ${JSON.stringify(b.text)})" class="px-2 py-1 rounded bg-amber-500/20 text-[11px] text-amber-200">Abrir</button>
-            <button onclick="deleteVaultBubble(${idx})" class="px-2 py-1 rounded bg-rose-500/20 text-[11px] text-rose-200">X</button>
+            <button type="button" onclick="spawnBubble(${JSON.stringify(b.name)}, ${JSON.stringify(b.text)})" class="px-2 py-1 rounded bg-amber-500/20 text-[11px] text-amber-200">Abrir</button>
+            <button type="button" onclick="deleteVaultBubble(${idx})" class="px-2 py-1 rounded bg-rose-500/20 text-[11px] text-rose-200">X</button>
           </div>
         `;
         list.appendChild(li);
@@ -292,24 +327,36 @@
     function openBubbleModal(editId = null) {
       editingBubbleId = editId;
       const modal = document.getElementById("bubbleModal");
+      const nameInput = document.getElementById("bubbleNameInput");
+      const textInput = document.getElementById("bubbleTextInput");
       if (editId) {
         const target = activeScreenBubbles.find((x) => x.id === editId);
         document.getElementById("bubbleModalTitle").textContent = "Editar Bolinha";
-        document.getElementById("bubbleNameInput").value = target ? target.name : "";
-        document.getElementById("bubbleTextInput").value = target ? target.text : "";
+        nameInput.value = target ? target.name : "";
+        textInput.value = target ? target.text : "";
       } else {
         document.getElementById("bubbleModalTitle").textContent = "Nova Bolinha";
-        document.getElementById("bubbleNameInput").value = "";
-        document.getElementById("bubbleTextInput").value = "";
+        nameInput.value = "";
+        textInput.value = "";
       }
       modal.classList.remove("hidden");
-      modal.classList.add("flex"); modal.style.display="flex"; modal.style.visibility="visible";
+      modal.classList.add("flex");
+      modal.style.display = "flex";
+      modal.style.visibility = "visible";
+      setTimeout(() => {
+        nameInput.focus();
+      }, 80);
     }
 
     function closeBubbleModal() {
       const modal = document.getElementById("bubbleModal");
-      modal.classList.add("hidden"); modal.style.display="none"; modal.style.visibility="hidden";
+      if (document.activeElement && modal.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
+      modal.classList.add("hidden");
       modal.classList.remove("flex");
+      modal.style.display = "none";
+      modal.style.visibility = "hidden";
       editingBubbleId = null;
     }
 
@@ -341,13 +388,13 @@
       const id = "b_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
       const el = document.createElement("div");
       el.className = "bubble bubble-item";
-      el.textContent = name.slice(0, 5).toUpperCase();
-      el.dataset.text = text;
+      el.textContent = String(name || "CLIP").slice(0, 5).toUpperCase();
+      el.dataset.text = text || "";
       el.style.left = `${40 + ((activeScreenBubbles.length * 18) % 180)}px`;
       el.style.top = `${120 + ((activeScreenBubbles.length * 24) % 240)}px`;
       document.body.appendChild(el);
 
-      const record = { id, name: el.textContent, text, el };
+      const record = { id, name: el.textContent, text: el.dataset.text, el };
       activeScreenBubbles.push(record);
       bindBubbleGestures(el, {
         isMaster: false,
@@ -375,7 +422,6 @@
       let startX = 0, startY = 0, initLeft = 0, initTop = 0, moved = false, tapCount = 0, tapTimer = null;
 
       el.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
         el.setPointerCapture(e.pointerId);
         startX = e.clientX;
         startY = e.clientY;
@@ -420,7 +466,7 @@
             else if (tapCount === 2) handlers.onDoubleTap?.();
             else if (tapCount >= 3) handlers.onTripleTap?.();
             tapCount = 0;
-          }, 270);
+          }, 280);
         }
       });
     }
@@ -440,12 +486,14 @@
       const m = document.getElementById("creditsModal");
       m.classList.remove("hidden");
       m.classList.add("flex");
+      m.style.display = "flex";
     }
 
     function closeCreditsModal() {
       const m = document.getElementById("creditsModal");
       m.classList.add("hidden");
       m.classList.remove("flex");
+      m.style.display = "none";
     }
 
     function showLicenseInfo() {
@@ -459,7 +507,9 @@
     function openSecretPanel() {
       const p = document.getElementById("secretPanel");
       p.classList.remove("hidden");
-      p.classList.add("flex"); p.style.display="flex"; p.style.visibility="visible"; p.style.display="flex"; p.style.visibility="visible"; p.style.display="flex"; p.style.visibility="visible";
+      p.classList.add("flex");
+      p.style.display = "flex";
+      p.style.visibility = "visible";
       renderAdendos();
     }
 
@@ -467,6 +517,7 @@
       const p = document.getElementById("secretPanel");
       p.classList.add("hidden");
       p.classList.remove("flex");
+      p.style.display = "none";
     }
 
     function testAndApplyAdendo() {
@@ -486,7 +537,7 @@
       adendos.forEach((a, i) => {
         const li = document.createElement("li");
         li.className = "p-2 rounded bg-black/60 flex items-center justify-between gap-2";
-        li.innerHTML = `<span class="truncate font-semibold">${a.name}</span><button onclick="deleteAdendo(${i})" class="px-2 py-0.5 rounded bg-rose-500/30 text-rose-200">Excluir</button>`;
+        li.innerHTML = `<span class="truncate font-semibold">${a.name}</span><button type="button" onclick="deleteAdendo(${i})" class="px-2 py-0.5 rounded bg-rose-500/30 text-rose-200">Excluir</button>`;
         ul.appendChild(li);
       });
     }
@@ -507,5 +558,13 @@
       notify("Chaves atualizadas para esta licença!");
     }
   </script>
-<script id="bolaclip-overlay-script">if(window.location.search.indexOf("overlay=1")!==-1){document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("bolaclip-overlay-only")});if(document.body)document.body.classList.add("bolaclip-overlay-only")}</script></body>
+  <script id="bolaclip-overlay-script">
+    if (window.location.search.indexOf("overlay=1") !== -1) {
+      document.addEventListener("DOMContentLoaded", function () {
+        document.body.classList.add("bolaclip-overlay-only");
+      });
+      if (document.body) document.body.classList.add("bolaclip-overlay-only");
+    }
+  </script>
+</body>
 </html>
